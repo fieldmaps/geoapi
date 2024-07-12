@@ -1,40 +1,30 @@
 name: Trigger auto deployment for fieldmaps-geoapi
-
-# When this action will be executed
 on:
-  # Automatically trigger it when detected changes in repo
   push:
-    branches: 
-      [ main ]
+    branches: [main]
     paths:
-    - '**'
-    - '.github/workflows/fieldmaps-geoapi-AutoDeployTrigger-9b06089a-1e04-4c49-b608-79bc136346c5.yml'
-
-  # Allow manual trigger 
-  workflow_dispatch:      
-
+      - "**"
+      - ".github/workflows/fieldmaps-geoapi-AutoDeployTrigger-9b06089a-1e04-4c49-b608-79bc136346c5.yml"
+  workflow_dispatch:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions: 
-      id-token: write #This is required for requesting the OIDC JWT Token
-      contents: read #Required when GH token is used to authenticate with private repo
-
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout to the branch
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v4
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.FIELDMAPSGEOAPI_AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.FIELDMAPSGEOAPI_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.FIELDMAPSGEOAPI_AZURE_SUBSCRIPTION_ID }}
-
       - name: Build and push container image to registry
         uses: azure/container-apps-deploy-action@v2
         with:
-          appSourcePath: ${{ github.workspace }} 
+          appSourcePath: ${{ github.workspace }}
           registryUrl: fieldmaps.azurecr.io
           registryUsername: ${{ secrets.FIELDMAPSGEOAPI_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.FIELDMAPSGEOAPI_REGISTRY_PASSWORD }}
@@ -43,5 +33,3 @@ jobs:
           imageToBuild: fieldmaps.azurecr.io/fieldmaps-geoapi:${{ github.sha }}
           _buildArgumentsKey_: |
             _buildArgumentsValues_
-
-
